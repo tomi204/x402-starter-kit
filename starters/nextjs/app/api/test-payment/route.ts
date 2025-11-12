@@ -9,6 +9,10 @@ export async function GET(request: NextRequest) {
 
   // If no payment header, return 402 with payment requirements
   if (!paymentHeader) {
+    // Get the full URL from the request
+    const url = new URL(request.url);
+    const resourceUrl = `${url.protocol}//${url.host}${url.pathname}`;
+
     const paymentRequirements = [
       {
         scheme: "exact",
@@ -17,6 +21,10 @@ export async function GET(request: NextRequest) {
         maxAmountRequired: "10000", // 0.01 USDC (6 decimals)
         asset: "0x5425890298aed601595a70AB815c96711a31Bc65", // USDC on Fuji
         facilitator: process.env.NEXT_PUBLIC_FACILITATOR_URL || "http://localhost:3402",
+        resource: resourceUrl,
+        description: "Test payment endpoint - $0.01 USDC",
+        mimeType: "application/json",
+        maxTimeoutSeconds: 300,
       }
     ];
 
@@ -44,31 +52,57 @@ export async function GET(request: NextRequest) {
     // Verify payment with our facilitator
     const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL || "http://localhost:3402";
 
+    // Get the full URL from the request
+    const url = new URL(request.url);
+    const resourceUrl = `${url.protocol}//${url.host}${url.pathname}`;
+
+    const verifyBody = {
+      x402Version: 1,
+      paymentPayload: payment,
+      paymentRequirements: {
+        scheme: "exact",
+        network: "avalanche-fuji",
+        payTo: process.env.NEXT_PUBLIC_RECEIVER_ADDRESS,
+        maxAmountRequired: "10000",
+        asset: "0x5425890298aed601595a70AB815c96711a31Bc65",
+        resource: resourceUrl,
+        description: "Test payment endpoint - $0.01 USDC",
+        mimeType: "application/json",
+        maxTimeoutSeconds: 300,
+      },
+    };
+
+    console.log("📤 Sending verify request to facilitator:", facilitatorUrl);
+    console.log("📦 Verify body:", JSON.stringify(verifyBody, null, 2));
+
     const verifyResponse = await fetch(`${facilitatorUrl}/verify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        x402Version: 1,
-        paymentPayload: payment,
-        paymentRequirements: {
-          scheme: "exact",
-          network: "avalanche-fuji",
-          payTo: process.env.NEXT_PUBLIC_RECEIVER_ADDRESS,
-          maxAmountRequired: "10000",
-        },
-      }),
+      body: JSON.stringify(verifyBody),
     });
+
+    console.log("📥 Verify response status:", verifyResponse.status);
+    const verifyText = await verifyResponse.text();
+    console.log("📥 Verify response body:", verifyText);
 
     if (!verifyResponse.ok) {
       return NextResponse.json(
-        { error: "Payment verification failed" },
+        { error: "Payment verification failed", details: verifyText },
         { status: 400 }
       );
     }
 
-    const verifyResult = await verifyResponse.json();
+    let verifyResult;
+    try {
+      verifyResult = JSON.parse(verifyText);
+    } catch (e) {
+      return NextResponse.json(
+        { error: "Invalid JSON response from facilitator", details: verifyText },
+        { status: 500 }
+      );
+    }
 
     if (!verifyResult.isValid) {
       return NextResponse.json(
@@ -91,6 +125,11 @@ export async function GET(request: NextRequest) {
           network: "avalanche-fuji",
           payTo: process.env.NEXT_PUBLIC_RECEIVER_ADDRESS,
           maxAmountRequired: "10000",
+          asset: "0x5425890298aed601595a70AB815c96711a31Bc65",
+          resource: resourceUrl,
+          description: "Test payment endpoint - $0.01 USDC",
+          mimeType: "application/json",
+          maxTimeoutSeconds: 300,
         },
       }),
     });

@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useWalletClient } from 'wagmi'
+import { fetchWithPayment } from '@/lib/x402-client'
 
 const CONTENT_CONFIG = {
   cheap: {
@@ -29,6 +31,9 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
   const [contentType, setContentType] = useState<ContentType | null>(null)
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { data: walletClient } = useWalletClient()
+  const router = useRouter()
 
   useEffect(() => {
     params.then(({ type }) => {
@@ -42,18 +47,36 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
   useEffect(() => {
     if (!contentType) return
 
-    const config = CONTENT_CONFIG[contentType]
-    fetch(config.apiEndpoint)
-      .then(res => res.json())
-      .then(data => {
-        setData(data)
+    const loadContent = async () => {
+      if (!walletClient) {
+        setError('Please connect your wallet to access this content')
         setLoading(false)
-      })
-      .catch(err => {
-        console.error('Failed to fetch data:', err)
+        return
+      }
+
+      try {
+        const config = CONTENT_CONFIG[contentType]
+        console.log('🔐 Fetching protected content with payment...')
+
+        const response = await fetchWithPayment(config.apiEndpoint, walletClient)
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const result = await response.json()
+        console.log('✅ Content loaded successfully!')
+        setData(result)
+      } catch (err: any) {
+        console.error('❌ Failed to load content:', err)
+        setError(err.message || 'Failed to load content')
+      } finally {
         setLoading(false)
-      })
-  }, [contentType])
+      }
+    }
+
+    loadContent()
+  }, [contentType, walletClient])
 
   if (!contentType) return null
 
@@ -62,22 +85,51 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
       <main className="container mx-auto px-4 py-16">
-        {/* Success Banner */}
-        <div className="mb-8 rounded-2xl border border-green-200 bg-green-50 p-6 dark:border-green-900/50 dark:bg-green-900/10">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-2xl">
-              ✓
+        {/* Error Banner */}
+        {error && (
+          <div className="mb-8 rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-900/50 dark:bg-red-900/10">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500 text-2xl">
+                ⚠
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  Error
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {error}
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                Payment Successful!
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                You paid {config.price} on Avalanche C-Chain
-              </p>
+            <div className="mt-4">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-gray-900"
+              >
+                ← Back to Home
+              </Link>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Success Banner */}
+        {!error && !loading && data && (
+          <div className="mb-8 rounded-2xl border border-green-200 bg-green-50 p-6 dark:border-green-900/50 dark:bg-green-900/10">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-2xl">
+                ✓
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  Payment Successful!
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  You paid {config.price} on Avalanche C-Chain
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Content Card */}
         <div className="mb-8 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl dark:border-gray-800 dark:bg-gray-900 md:p-12">
