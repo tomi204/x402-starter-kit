@@ -1,0 +1,46 @@
+{
+  "name": "x402-avalanche-nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "displayName": "X402 Next.js Avalanche",
+  "description": "Next.js Avalanche starter with X402 payment protocol integration for C-Chain",
+  "usecase": "Payments",
+  "keywords": [
+    "avalanche",
+    "nextjs",
+    "x402",
+    "template",
+    "starter",
+    "c-chain",
+    "evm",
+    "payments"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@reown/appkit": "^1.6.2",
+    "@reown/appkit-adapter-wagmi": "^1.6.2",
+    "@tanstack/react-query": "^5.62.8",
+    "next": "15.0.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "viem": "^2.38.5",
+    "wagmi": "^2.13.5",
+    "x402-next": "^0.7.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.20.6",
+    "typescript": "^5"
+  }
+}
