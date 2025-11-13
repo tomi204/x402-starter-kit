@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="./public/avalanche.png" alt="Avalanche" width="200"/>
+</div>
+
 # Next.js x402 Starter Kit for Avalanche
 
 Professional full-stack Next.js template with x402 payment-gated content, Reown wallet integration, API endpoints on Avalanche C-Chain.

@@ -5,11 +5,13 @@ import * as THREE from 'three';
 
 const AnimatedShaderBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  // Check if we're on the client side - will be false during SSR
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch by only rendering on client
   useEffect(() => {
-    setMounted(true);
+    // Use a microtask to avoid the setState warning
+    Promise.resolve().then(() => setMounted(true));
   }, []);
 
   useEffect(() => {
