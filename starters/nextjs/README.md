@@ -46,8 +46,8 @@ NEXT_PUBLIC_RECEIVER_ADDRESS=0x1234567890123456789012345678901234567890
 # Network: avalanche-fuji (testnet) or avalanche (mainnet)
 NEXT_PUBLIC_NETWORK=avalanche-fuji
 
-# Facilitator URL (default is fine for testing)
-NEXT_PUBLIC_FACILITATOR_URL=https://x402.org/facilitator
+# Facilitator URL
+NEXT_PUBLIC_FACILITATOR_URL=https://facilitator.ultravioletadao.xyz
 
 # Get from https://cloud.reown.com (REQUIRED)
 NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id_here
@@ -94,7 +94,7 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 | ------------------------------ | ---------------------------------------------- | ------------------------------------------------------- |
 | `NEXT_PUBLIC_RECEIVER_ADDRESS` | Your EVM wallet address for receiving payments | `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb`             |
 | `NEXT_PUBLIC_NETWORK`          | Avalanche network to use                       | `avalanche-fuji` or `avalanche`                         |
-| `NEXT_PUBLIC_FACILITATOR_URL`  | x402 facilitator endpoint                      | `https://x402.org/facilitator`                          |
+| `NEXT_PUBLIC_FACILITATOR_URL`  | x402 facilitator endpoint                      | `https://facilitator.ultravioletadao.xyz`               |
 | `NEXT_PUBLIC_REOWN_PROJECT_ID` | Reown WalletConnect Project ID (REQUIRED)      | Get from [Reown Cloud](https://cloud.reown.com)         |
 | `NEXT_PUBLIC_CDP_CLIENT_KEY`   | Coinbase CDP Client Key (REQUIRED)             | Get from [CDP Portal](https://portal.cdp.coinbase.com/) |
 | `CDP_API_KEY_ID`               | Coinbase CDP API Key ID (REQUIRED)             | Get from [CDP Portal](https://portal.cdp.coinbase.com/) |
@@ -189,11 +189,47 @@ Payment Required? → Yes → Return 402 Payment Required
 Allow Access ← Facilitator Verifies Payment
 ```
 
+## 🤖 AI Features
+
+This starter includes integration with **OpenRouter** for AI-powered market analysis:
+
+### OpenRouter Setup (Optional)
+
+1. Get an API key from [OpenRouter](https://openrouter.ai/keys)
+2. Add to your `.env.local`:
+
+```bash
+OPENROUTER_API_KEY=sk-or-v1-your_api_key_here
+```
+
+3. The AI analysis endpoint will use real AI (Claude 3.5 Sonnet by default)
+4. Without the key, it falls back to mock data automatically
+
+### Available Models via OpenRouter
+
+- `anthropic/claude-3.5-sonnet` (default)
+- `openai/gpt-4o`
+- `meta-llama/llama-3.1-70b-instruct`
+- `google/gemini-pro`
+- Many more at [openrouter.ai/models](https://openrouter.ai/models)
+
+Change the model in `app/api/ai-analysis/route.ts`:
+
+```typescript
+const aiService = new AIService({
+  apiKey: process.env.OPENROUTER_API_KEY,
+  model: 'openai/gpt-4o', // Change to your preferred model
+  temperature: 0.7,
+  maxTokens: 800,
+});
+```
+
 ## 📚 Learn More
 
 - [Avalanche Documentation](https://docs.avax.network)
 - [Avalanche C-Chain](https://docs.avax.network/learn/avalanche/c-chain)
 - [x402 Protocol Specification](https://github.com/base-org/x402-spec)
+- [OpenRouter Documentation](https://openrouter.ai/docs)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Viem Documentation](https://viem.sh)
 
@@ -230,6 +266,15 @@ npm start
 - Delete `node_modules` and `.next` folder
 - Run `npm install` again
 - Check Node.js version (must be 18+)
+
+## 🤝 Contributing
+
+Built by [tomi204](https://github.com/tomi204) for the Avalanche ecosystem.
+
+Contributions are welcome! Feel free to:
+- Report bugs
+- Suggest features
+- Submit pull requests
 
 ## 📄 License
 

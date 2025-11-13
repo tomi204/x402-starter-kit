@@ -70,8 +70,8 @@ Perfect for building:
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd x402-starket-kit
+git clone https://github.com/tomi204/x402-starter-kits.git
+cd x402-starter-kits
 
 # Navigate to the Next.js starter
 cd starters/nextjs
@@ -94,8 +94,8 @@ NEXT_PUBLIC_RECEIVER_ADDRESS=0x1234567890123456789012345678901234567890
 # Network: avalanche-fuji (testnet) or avalanche (mainnet)
 NEXT_PUBLIC_NETWORK=avalanche-fuji
 
-# Facilitator URL (default works for testing)
-NEXT_PUBLIC_FACILITATOR_URL=https://x402.org/facilitator
+# Facilitator URL
+NEXT_PUBLIC_FACILITATOR_URL=https://facilitator.ultravioletadao.xyz
 
 # Get from https://cloud.reown.com (REQUIRED)
 NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id_here
@@ -287,9 +287,9 @@ Then add the route to `middleware.ts` with your desired price.
 |----------|----------|-------------|---------|
 | `NEXT_PUBLIC_RECEIVER_ADDRESS` | ✅ Yes | Your EVM wallet address for receiving payments | `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb` |
 | `NEXT_PUBLIC_NETWORK` | ✅ Yes | Avalanche network | `avalanche-fuji` or `avalanche` |
-| `NEXT_PUBLIC_FACILITATOR_URL` | ✅ Yes | x402 facilitator endpoint | `https://x402.org/facilitator` |
+| `NEXT_PUBLIC_FACILITATOR_URL` | ✅ Yes | x402 facilitator endpoint | `https://facilitator.ultravioletadao.xyz` |
 | `NEXT_PUBLIC_REOWN_PROJECT_ID` | ✅ Yes | Reown/WalletConnect Project ID | Get from [cloud.reown.com](https://cloud.reown.com) |
-| `OPENAI_API_KEY` | ⚠️ Optional | For AI analysis features | Get from [OpenAI](https://platform.openai.com/api-keys) |
+| `OPENROUTER_API_KEY` | ⚠️ Optional | For AI analysis features | Get from [OpenRouter](https://openrouter.ai/keys) |
 
 ### Networks
 
@@ -476,6 +476,6 @@ This means you can use this code for personal or commercial projects, modify it,
 
 **Built with ❤️ for the Avalanche ecosystem**
 
-[Report Bug](https://github.com/your-repo/issues) • [Request Feature](https://github.com/your-repo/issues)
+[Report Bug](https://github.com/tomi204/x402-starter-kits/issues) • [Request Feature](https://github.com/tomi204/x402-starter-kits/issues)
 
 </div>
