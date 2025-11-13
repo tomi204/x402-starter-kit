@@ -1,17 +1,19 @@
 'use client'
 
 import Link from 'next/link'
-import { notFound, useRouter } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useWalletClient } from 'wagmi'
+import { useAppKitAccount } from '@reown/appkit/react'
 import { fetchWithPayment } from '@/lib/x402-client'
+import { Footer } from '@/components/ui/footer'
 
 const CONTENT_CONFIG = {
   cheap: {
     price: '$0.01',
     title: 'Premium Data Access',
     icon: '📊',
-    gradient: 'from-blue-500 to-cyan-500',
+    gradient: 'from-red-500 to-orange-500',
     apiEndpoint: '/api/premium-data',
     description: 'Exclusive market insights and analytics'
   },
@@ -19,7 +21,7 @@ const CONTENT_CONFIG = {
     price: '$0.25',
     title: 'AI-Powered Analysis',
     icon: '🤖',
-    gradient: 'from-purple-500 to-pink-500',
+    gradient: 'from-red-600 to-pink-600',
     apiEndpoint: '/api/ai-analysis',
     description: 'Advanced AI market intelligence'
   },
@@ -27,13 +29,58 @@ const CONTENT_CONFIG = {
 
 type ContentType = keyof typeof CONTENT_CONFIG
 
+interface PremiumData {
+  data?: {
+    insights: Array<{
+      id: number;
+      title: string;
+      description: string;
+      metrics?: Record<string, string>;
+      protocols?: string[];
+    }>;
+    exclusiveContent: {
+      researchReports: number;
+      tradingSignals: number;
+      tutorialVideos: number;
+    };
+  };
+  analysis?: {
+    marketSentiment: {
+      score: number;
+      trend: string;
+      confidence: string;
+      summary: string;
+    };
+    recommendations: Array<{
+      action: string;
+      asset: string;
+      confidence: string;
+      reasoning: string;
+    }>;
+    riskFactors: string[];
+    opportunities: string[];
+  };
+  model?: string;
+  tokens?: number;
+  generatedAt?: string;
+}
+
 export default function ContentPage({ params }: { params: Promise<{ type: string }> }) {
   const [contentType, setContentType] = useState<ContentType | null>(null)
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<PremiumData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { isConnected } = useAppKitAccount()
   const { data: walletClient } = useWalletClient()
-  const router = useRouter()
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 Wallet Status:', {
+      isConnected,
+      hasWalletClient: !!walletClient,
+      walletClient
+    })
+  }, [isConnected, walletClient])
 
   useEffect(() => {
     params.then(({ type }) => {
@@ -48,11 +95,31 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
     if (!contentType) return
 
     const loadContent = async () => {
-      if (!walletClient) {
-        setError('Please connect your wallet to access this content')
-        setLoading(false)
+      // Reset error when connection state changes
+      setError(null)
+      setLoading(true)
+
+      // Check if wallet is connected first
+      if (!isConnected) {
+        console.log('⏳ Waiting for wallet connection...')
+        // Keep loading state, give time for wallet to connect
+        setTimeout(() => {
+          if (!isConnected) {
+            setError('Please connect your wallet to access this content')
+            setLoading(false)
+          }
+        }, 1500) // Wait 1.5s before showing error
         return
       }
+
+      // Wait for wallet client to be available
+      if (!walletClient) {
+        console.log('⏳ Waiting for wallet client...')
+        // Keep loading state, don't show error yet
+        return
+      }
+
+      console.log('✅ Wallet client available, proceeding with payment...')
 
       try {
         const config = CONTENT_CONFIG[contentType]
@@ -67,23 +134,24 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
         const result = await response.json()
         console.log('✅ Content loaded successfully!')
         setData(result)
-      } catch (err: any) {
+        setError(null) // Clear any errors
+      } catch (err) {
         console.error('❌ Failed to load content:', err)
-        setError(err.message || 'Failed to load content')
+        setError(err instanceof Error ? err.message : 'Failed to load content')
       } finally {
         setLoading(false)
       }
     }
 
     loadContent()
-  }, [contentType, walletClient])
+  }, [contentType, isConnected, walletClient])
 
   if (!contentType) return null
 
   const config = CONTENT_CONFIG[contentType]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
+    <div className="min-h-screen">{/* Background handled by AnimatedShaderBackground in layout */}
       <main className="container mx-auto px-4 py-16">
         {/* Error Banner */}
         {error && (
@@ -104,7 +172,7 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
             <div className="mt-4">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-gray-900"
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-red-700"
               >
                 ← Back to Home
               </Link>
@@ -132,7 +200,7 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
         )}
 
         {/* Content Card */}
-        <div className="mb-8 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl dark:border-gray-800 dark:bg-gray-900 md:p-12">
+        <div className="mb-8 rounded-3xl border border-red-900/30 bg-neutral-950/70 backdrop-blur-sm p-8 shadow-xl shadow-red-900/20 md:p-12">
           <div className="mb-8 text-center">
             <div className={`mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br ${config.gradient} text-4xl`}>
               {config.icon}
@@ -147,19 +215,19 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500" />
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-800 border-t-red-500" />
             </div>
           ) : data ? (
             <div className="space-y-6">
               {contentType === 'cheap' && data.data && (
                 <div className="space-y-6">
-                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-800 dark:bg-gray-800/50">
+                  <div className="rounded-xl border border-red-900/30 bg-neutral-900/50 backdrop-blur-sm p-6">
                     <h3 className="mb-4 text-xl font-bold text-gray-900 dark:text-gray-100">
                       📈 Market Insights
                     </h3>
                     <div className="grid gap-4 md:grid-cols-3">
-                      {data.data.insights.map((insight: any) => (
-                        <div key={insight.id} className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+                      {data.data.insights.map((insight) => (
+                        <div key={insight.id} className="rounded-lg border border-red-900/30 bg-neutral-950/70 backdrop-blur-sm p-4">
                           <h4 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">
                             {insight.title}
                           </h4>
@@ -191,24 +259,24 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-3">
-                    <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-blue-50 to-cyan-50 p-6 dark:border-gray-800 dark:from-blue-900/20 dark:to-cyan-900/20">
-                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    <div className="rounded-xl border border-red-900/30 bg-gradient-to-br from-red-950/50 to-orange-950/50 backdrop-blur-sm p-6">
+                      <div className="text-3xl font-bold text-red-500">
                         {data.data.exclusiveContent.researchReports}
                       </div>
                       <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Research Reports
                       </div>
                     </div>
-                    <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-purple-50 to-pink-50 p-6 dark:border-gray-800 dark:from-purple-900/20 dark:to-pink-900/20">
-                      <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                    <div className="rounded-xl border border-red-900/30 bg-gradient-to-br from-red-950/50 to-pink-950/50 backdrop-blur-sm p-6">
+                      <div className="text-3xl font-bold text-red-400">
                         {data.data.exclusiveContent.tradingSignals}
                       </div>
                       <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Trading Signals
                       </div>
                     </div>
-                    <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-green-50 to-emerald-50 p-6 dark:border-gray-800 dark:from-green-900/20 dark:to-emerald-900/20">
-                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                    <div className="rounded-xl border border-red-900/30 bg-gradient-to-br from-orange-950/50 to-yellow-950/50 backdrop-blur-sm p-6">
+                      <div className="text-3xl font-bold text-orange-400">
                         {data.data.exclusiveContent.tutorialVideos}
                       </div>
                       <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -251,7 +319,7 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
                         💡 AI Recommendations
                       </h3>
                       <div className="space-y-3">
-                        {data.analysis.recommendations.map((rec: any, i: number) => (
+                        {data.analysis.recommendations.map((rec, i) => (
                           <div key={i} className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
                             <div className="mb-2 flex items-center justify-between">
                               <span className={`rounded px-2 py-1 text-xs font-bold ${rec.action === 'BUY' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'}`}>
@@ -301,9 +369,9 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
 
                   <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800/50">
                     <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                      <span>Generated by {data.model}</span>
-                      <span>{data.tokens} tokens used</span>
-                      <span>{new Date(data.generatedAt).toLocaleTimeString()}</span>
+                      <span>Generated by {data.model || 'AI'}</span>
+                      <span>{data.tokens || 0} tokens used</span>
+                      <span>{data.generatedAt ? new Date(data.generatedAt).toLocaleTimeString() : 'N/A'}</span>
                     </div>
                   </div>
                 </div>
@@ -320,7 +388,7 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
         <div className="text-center">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-gray-900"
+            className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 font-semibold text-white transition-all hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/50"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -329,6 +397,8 @@ export default function ContentPage({ params }: { params: Promise<{ type: string
           </Link>
         </div>
       </main>
+
+      <Footer />
     </div>
   )
 }

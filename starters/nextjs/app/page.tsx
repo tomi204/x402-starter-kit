@@ -2,28 +2,60 @@
 
 import { ContentCard } from "@/components/ui/content-card";
 import { Stats } from "@/components/ui/stats";
+import { TextShimmer } from "@/components/ui/text-shimmer";
+import { Typewriter } from "@/components/ui/typewriter";
+import { Footer } from "@/components/ui/footer";
 import { useAppKitAccount } from "@reown/appkit/react";
 
 export default function Home() {
   const { isConnected } = useAppKitAccount();
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen">
       <main className="container mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="mb-16 text-center">
           <h1 className="mb-4 text-5xl font-bold tracking-tight text-white sm:text-6xl">
             x402 Payment Protocol
             <br />
-            <span className="text-red-600">
+            <TextShimmer
+              as="span"
+              className="text-5xl font-bold sm:text-6xl"
+              duration={3}
+              spread={3}
+              baseColor="#dc2626"
+              gradientColor="#ffffff"
+            >
               on Avalanche
-            </span>
+            </TextShimmer>
           </h1>
 
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-400">
+          <p className="mx-auto mb-4 max-w-2xl text-lg text-gray-400">
             Monetize your APIs, content, and AI services with instant cryptocurrency payments.
             Pay-per-use model with on-chain verification.
           </p>
+
+          {/* Powered by Avalanche with Typewriter */}
+          <div className="mb-8 flex items-center justify-center gap-2 text-lg">
+            <span className="text-red-600 text-2xl">🔺</span>
+            <span className="text-gray-300">Powered by Avalanche</span>
+            <span className="text-gray-500">-</span>
+            <Typewriter
+              text={[
+                "for you",
+                "for developers",
+                "for creators",
+                "for innovators",
+                "for the future",
+              ]}
+              speed={70}
+              className="text-red-500 font-semibold"
+              waitTime={1500}
+              deleteSpeed={40}
+              cursorChar={"_"}
+              loop={true}
+            />
+          </div>
 
           {!isConnected && (
             <div className="mb-12 rounded-lg border border-red-900/50 bg-red-950/20 p-6">
@@ -81,7 +113,7 @@ export default function Home() {
         </div>
 
         {/* How it Works */}
-        <div className="rounded-lg border border-red-900/30 bg-neutral-950 p-8 md:p-12">
+        <div className="rounded-lg border border-red-900/30 bg-neutral-950/60 backdrop-blur-sm p-8 md:p-12">
           <h2 className="mb-8 text-center text-3xl font-bold text-white">
             How It Works
           </h2>
@@ -152,7 +184,7 @@ export default function Home() {
             ].map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-lg border border-red-900/30 bg-neutral-950 p-6 text-center"
+                className="rounded-lg border border-red-900/30 bg-neutral-950/50 backdrop-blur-sm p-6 text-center"
               >
                 <h3 className="mb-2 font-semibold text-white">
                   {feature.title}
@@ -165,6 +197,8 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

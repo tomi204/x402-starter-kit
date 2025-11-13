@@ -26,7 +26,7 @@ export function Stats() {
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="rounded-lg border border-red-900/30 bg-neutral-950 p-6 text-center"
+          className="rounded-lg border border-red-900/30 bg-neutral-950/50 backdrop-blur-sm p-6 text-center"
         >
           <div className="text-3xl font-bold text-red-600 mb-2">
             {stat.value}

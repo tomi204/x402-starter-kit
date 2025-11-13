@@ -2,17 +2,32 @@
 
 import { useState } from 'react'
 import { useWalletClient } from 'wagmi'
+import { useAppKitAccount } from '@reown/appkit/react'
 import Link from 'next/link'
 import { fetchWithPayment } from '@/lib/x402-client'
+import { Footer } from '@/components/ui/footer'
+
+interface TestPaymentResult {
+  success: boolean;
+  message: string;
+  txHash?: string;
+  networkId?: string;
+  data?: {
+    premium: boolean;
+    content: string;
+    timestamp: string;
+  };
+}
 
 export default function TestPaymentPage() {
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<TestPaymentResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { isConnected } = useAppKitAccount()
   const { data: walletClient } = useWalletClient()
 
   const testPayment = async () => {
-    if (!walletClient) {
+    if (!isConnected || !walletClient) {
       setError('Please connect your wallet first')
       return
     }
@@ -38,9 +53,9 @@ export default function TestPaymentPage() {
       console.log('✅ Payment successful!', data)
 
       setResult(data)
-    } catch (err: any) {
+    } catch (err) {
       console.error('❌ Payment error:', err)
-      setError(err.message || 'Failed to complete payment')
+      setError(err instanceof Error ? err.message : 'Failed to complete payment')
     } finally {
       setLoading(false)
     }
@@ -88,7 +103,7 @@ export default function TestPaymentPage() {
                 </ul>
               </div>
 
-              {!walletClient && (
+              {!isConnected && (
                 <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900/50 dark:bg-yellow-900/10">
                   <p className="text-sm text-gray-700 dark:text-gray-300">
                     ⚠️ Please connect your wallet using the button in the top right
@@ -98,7 +113,7 @@ export default function TestPaymentPage() {
 
               <button
                 onClick={testPayment}
-                disabled={loading || !walletClient}
+                disabled={loading || !isConnected || !walletClient}
                 className="w-full rounded-xl bg-blue-600 px-6 py-4 font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? (
@@ -162,6 +177,8 @@ export default function TestPaymentPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   )
 }

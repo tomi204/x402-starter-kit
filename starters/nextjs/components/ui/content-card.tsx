@@ -12,7 +12,7 @@ interface ContentCardProps {
   gradient: string
 }
 
-export function ContentCard({ title, description, price, href, icon, gradient }: ContentCardProps) {
+export function ContentCard({ title, description, price, href }: ContentCardProps) {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
@@ -20,7 +20,7 @@ export function ContentCard({ title, description, price, href, icon, gradient }:
       href={href}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative overflow-hidden rounded-lg border border-red-900/30 bg-neutral-950 p-6 transition-all hover:border-red-600"
+      className="group relative overflow-hidden rounded-lg border border-red-900/30 bg-neutral-950/50 backdrop-blur-sm p-6 transition-all hover:border-red-600"
     >
       <div className="relative z-10">
         <div className="mb-4 flex items-center justify-between">

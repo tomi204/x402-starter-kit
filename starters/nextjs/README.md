@@ -1,6 +1,6 @@
 # Next.js x402 Starter Kit for Avalanche
 
-Professional full-stack Next.js template with x402 payment-gated content, Reown wallet integration, and mock API endpoints on Avalanche C-Chain.
+Professional full-stack Next.js template with x402 payment-gated content, Reown wallet integration, API endpoints on Avalanche C-Chain.
 
 ## 🚀 Features
 
@@ -59,23 +59,26 @@ NEXT_PUBLIC_CDP_CLIENT_KEY=your_client_key_here
 **Important Required Keys**:
 
 **Reown Project ID (for wallet connections)**:
+
 1. Go to [cloud.reown.com](https://cloud.reown.com)
 2. Sign up (free)
 3. Create a new project
 4. Copy the Project ID
 
 **Coinbase CDP Keys (for payments)**:
+
 1. Go to [portal.cdp.coinbase.com](https://portal.cdp.coinbase.com/)
 2. Sign up / Sign in
 3. Create a new project
 4. Go to "API Keys" section
 5. Click "Create API Key"
 6. Copy all three values:
+
    - Client Key → `NEXT_PUBLIC_CDP_CLIENT_KEY`
    - API Key ID → `CDP_API_KEY_ID`
    - API Key Secret → `CDP_API_KEY_SECRET`
 
-3. **Start development server:**
+7. **Start development server:**
 
 ```bash
 npm run dev
@@ -87,15 +90,15 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 🌐 Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_RECEIVER_ADDRESS` | Your EVM wallet address for receiving payments | `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb` |
-| `NEXT_PUBLIC_NETWORK` | Avalanche network to use | `avalanche-fuji` or `avalanche` |
-| `NEXT_PUBLIC_FACILITATOR_URL` | x402 facilitator endpoint | `https://x402.org/facilitator` |
-| `NEXT_PUBLIC_REOWN_PROJECT_ID` | Reown WalletConnect Project ID (REQUIRED) | Get from [Reown Cloud](https://cloud.reown.com) |
-| `NEXT_PUBLIC_CDP_CLIENT_KEY` | Coinbase CDP Client Key (REQUIRED) | Get from [CDP Portal](https://portal.cdp.coinbase.com/) |
-| `CDP_API_KEY_ID` | Coinbase CDP API Key ID (REQUIRED) | Get from [CDP Portal](https://portal.cdp.coinbase.com/) |
-| `CDP_API_KEY_SECRET` | Coinbase CDP API Key Secret (REQUIRED) | Get from [CDP Portal](https://portal.cdp.coinbase.com/) |
+| Variable                       | Description                                    | Example                                                 |
+| ------------------------------ | ---------------------------------------------- | ------------------------------------------------------- |
+| `NEXT_PUBLIC_RECEIVER_ADDRESS` | Your EVM wallet address for receiving payments | `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb`             |
+| `NEXT_PUBLIC_NETWORK`          | Avalanche network to use                       | `avalanche-fuji` or `avalanche`                         |
+| `NEXT_PUBLIC_FACILITATOR_URL`  | x402 facilitator endpoint                      | `https://x402.org/facilitator`                          |
+| `NEXT_PUBLIC_REOWN_PROJECT_ID` | Reown WalletConnect Project ID (REQUIRED)      | Get from [Reown Cloud](https://cloud.reown.com)         |
+| `NEXT_PUBLIC_CDP_CLIENT_KEY`   | Coinbase CDP Client Key (REQUIRED)             | Get from [CDP Portal](https://portal.cdp.coinbase.com/) |
+| `CDP_API_KEY_ID`               | Coinbase CDP API Key ID (REQUIRED)             | Get from [CDP Portal](https://portal.cdp.coinbase.com/) |
+| `CDP_API_KEY_SECRET`           | Coinbase CDP API Key Secret (REQUIRED)         | Get from [CDP Portal](https://portal.cdp.coinbase.com/) |
 
 ### Networks
 
@@ -147,23 +150,23 @@ Edit `middleware.ts`:
 const x402PaymentMiddleware = paymentMiddleware(
   address,
   {
-    '/content/cheap': {
-      price: '$0.01',
+    "/content/cheap": {
+      price: "$0.01",
       config: {
-        description: 'Access to cheap content on Avalanche',
+        description: "Access to cheap content on Avalanche",
       },
       network,
     },
-    '/your-new-route': {
-      price: '$0.50',
+    "/your-new-route": {
+      price: "$0.50",
       config: {
-        description: 'Your custom content',
+        description: "Your custom content",
       },
       network,
     },
-  },
+  }
   // ... rest of config
-)
+);
 ```
 
 ### Changing Prices
@@ -217,11 +220,13 @@ npm start
 ## 🐛 Troubleshooting
 
 **Issue**: Payment not working
+
 - Check that your wallet address in `.env.local` is correct (starts with `0x`)
 - Verify you're using the correct network (`avalanche-fuji` for testing)
 - Ensure CDP Client Key is valid
 
 **Issue**: Build errors
+
 - Delete `node_modules` and `.next` folder
 - Run `npm install` again
 - Check Node.js version (must be 18+)

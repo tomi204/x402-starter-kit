@@ -1,6 +1,6 @@
 "use client";
 
-import { wagmiAdapter, projectId, networks } from "@/lib/config";
+import { wagmiAdapter, projectId } from "@/lib/config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createAppKit } from "@reown/appkit/react";
 import React, { type ReactNode } from "react";
@@ -29,7 +29,20 @@ createAppKit({
   defaultNetwork: avalancheFuji,
   metadata,
   features: {
-    analytics: true,
+    analytics: false, // Disable analytics for performance
+    email: false, // Disable email login
+    socials: [], // Disable social logins (Google, etc)
+    emailShowWallets: true, // Show only wallets
+  },
+  themeMode: 'dark',
+  themeVariables: {
+    // New Reown naming
+    '--apkt-color-mix': '#ef4444',
+    '--apkt-color-mix-strength': 40,
+    // Legacy WalletConnect naming (still works)
+    '--w3m-accent': '#ef4444',
+    '--w3m-color-mix': '#ef4444',
+    '--w3m-color-mix-strength': 40,
   },
 });
 
