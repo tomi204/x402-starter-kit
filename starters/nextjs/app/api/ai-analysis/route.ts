@@ -23,6 +23,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Validate AI API key before processing payment
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error("❌ OPENROUTER_API_KEY not configured");
+      return NextResponse.json(
+        {
+          error: "Service configuration error",
+          details: "AI service is not properly configured. Please contact support."
+        },
+        { status: 503 }
+      );
+    }
+
     const url = new URL(request.url);
     const resourceUrl = `${url.protocol}//${url.host}${url.pathname}`;
     const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL || "http://localhost:3402";
@@ -45,9 +57,14 @@ export async function GET(request: NextRequest) {
     );
 
     if (!settleResult.success) {
+      console.error("❌ Payment settlement failed:", settleResult.error);
       return NextResponse.json(
-        { error: "Settlement failed", details: settleResult.error },
-        { status: 500 }
+        {
+          error: "Payment settlement failed",
+          details: settleResult.error,
+          message: "Unable to process payment. Please ensure your payment details are correct and try again."
+        },
+        { status: 402 }
       );
     }
 
@@ -70,9 +87,41 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Payment processing error:", error);
+    console.error("❌ Error processing AI analysis:", error);
+
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    // Check if it's an AI API key error
+    if (errorMessage.includes("OpenRouter API key") || errorMessage.includes("API key")) {
+      return NextResponse.json(
+        {
+          error: "AI service authentication failed",
+          details: errorMessage,
+          message: "There's an issue with the AI service configuration. Please contact support."
+        },
+        { status: 503 }
+      );
+    }
+
+    // Check if it's an OpenRouter error
+    if (errorMessage.includes("OpenRouter")) {
+      return NextResponse.json(
+        {
+          error: "AI service error",
+          details: errorMessage,
+          message: "The AI service encountered an error. Please try again later."
+        },
+        { status: 503 }
+      );
+    }
+
+    // Generic error
     return NextResponse.json(
-      { error: "Payment processing failed", details: error instanceof Error ? error.message : "Unknown error" },
+      {
+        error: "Request processing failed",
+        details: errorMessage,
+        message: "An unexpected error occurred. Please try again later."
+      },
       { status: 500 }
     );
   }

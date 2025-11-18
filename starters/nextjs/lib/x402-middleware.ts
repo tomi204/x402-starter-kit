@@ -90,9 +90,27 @@ export async function verifyPayment(
     })
 
     if (!verifyResponse.ok) {
+      let errorDetails = `Facilitator returned HTTP ${verifyResponse.status}`;
+
+      // Try to get more details from response body
+      try {
+        const errorBody = await verifyResponse.json();
+        if (errorBody.error || errorBody.message) {
+          errorDetails = `${errorDetails}: ${errorBody.error || errorBody.message}`;
+        }
+        if (errorBody.details) {
+          errorDetails = `${errorDetails} - ${errorBody.details}`;
+        }
+      } catch {
+        // If response is not JSON, use status text
+        if (verifyResponse.statusText) {
+          errorDetails = `${errorDetails}: ${verifyResponse.statusText}`;
+        }
+      }
+
       return {
         isValid: false,
-        invalidReason: `Facilitator returned ${verifyResponse.status}`,
+        invalidReason: errorDetails,
       }
     }
 
@@ -103,9 +121,20 @@ export async function verifyPayment(
     }
   } catch (error) {
     console.error('Payment verification error:', error)
+
+    // Provide more helpful error messages
+    let errorMessage = 'Verification failed';
+    if (error instanceof Error) {
+      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
+        errorMessage = `Cannot connect to facilitator at ${facilitatorUrl}. Please verify the facilitator is running.`;
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
     return {
       isValid: false,
-      invalidReason: error instanceof Error ? error.message : 'Verification failed',
+      invalidReason: errorMessage,
     }
   }
 }
@@ -136,9 +165,27 @@ export async function settlePayment(
     })
 
     if (!settleResponse.ok) {
+      let errorDetails = `Facilitator returned HTTP ${settleResponse.status}`;
+
+      // Try to get more details from response body
+      try {
+        const errorBody = await settleResponse.json();
+        if (errorBody.error || errorBody.message) {
+          errorDetails = `${errorDetails}: ${errorBody.error || errorBody.message}`;
+        }
+        if (errorBody.details) {
+          errorDetails = `${errorDetails} - ${errorBody.details}`;
+        }
+      } catch {
+        // If response is not JSON, use status text
+        if (settleResponse.statusText) {
+          errorDetails = `${errorDetails}: ${settleResponse.statusText}`;
+        }
+      }
+
       return {
         success: false,
-        error: `Facilitator returned ${settleResponse.status}`,
+        error: errorDetails,
       }
     }
 
@@ -146,9 +193,20 @@ export async function settlePayment(
     return result
   } catch (error) {
     console.error('Payment settlement error:', error)
+
+    // Provide more helpful error messages
+    let errorMessage = 'Settlement failed';
+    if (error instanceof Error) {
+      if (error.message.includes('fetch failed') || error.message.includes('ECONNREFUSED')) {
+        errorMessage = `Cannot connect to facilitator at ${facilitatorUrl}. Please verify the facilitator is running.`;
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Settlement failed',
+      error: errorMessage,
     }
   }
 }

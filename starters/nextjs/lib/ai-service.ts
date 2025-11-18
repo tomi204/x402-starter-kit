@@ -129,12 +129,28 @@ export class AIService {
         model: this.model,
         tokens: completion.usage?.total_tokens || 0,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("❌ Error calling OpenRouter API:", error);
 
-      // Fallback to mock data on error
-      console.warn("⚠️ Falling back to mock analysis");
-      return this.getMockAnalysis();
+      const apiError = error as { status?: number; message?: string };
+
+      // Check for authentication/API key errors
+      if (apiError?.status === 401 || apiError?.status === 403) {
+        throw new Error("Invalid or missing OpenRouter API key. Please check your OPENROUTER_API_KEY environment variable.");
+      }
+
+      // Check for rate limiting
+      if (apiError?.status === 429) {
+        throw new Error("OpenRouter API rate limit exceeded. Please try again later.");
+      }
+
+      // Check for invalid request (could be wrong model or API key format)
+      if (apiError?.status === 400) {
+        throw new Error("Invalid request to OpenRouter API. Please verify your API key and configuration.");
+      }
+
+      // For other errors, throw with details
+      throw new Error(`OpenRouter API error: ${apiError?.message || 'Unknown error occurred'}`);
     }
   }
 
